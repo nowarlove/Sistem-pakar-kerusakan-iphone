@@ -1,0 +1,16 @@
+Kelas,Precision,Recall,F1-Score,Support
+Baterai Rusak,1.0,1.0,1.0,17
+LCD Rusak,1.0,1.0,1.0,40
+Speaker Rusak,1.0,1.0,1.0,2
+IC Power Rusak,1.0,1.0,1.0,26
+IC Cas Rusak,1.0,1.0,1.0,3
+IC WTR Rusak,1.0,1.0,1.0,1
+Antena Signal Rusak,1.0,1.0,1.0,2
+Kamera Rusak,1.0,1.0,1.0,3
+Mikrofon Rusak,1.0,1.0,1.0,1
+Port Pengisian Rusak,1.0,1.0,1.0,9
+IC Audio Rusak,1.0,1.0,1.0,2
+Tombol Rusak,1.0,1.0,1.0,18
+Body Rusak,1.0,1.0,1.0,6
+Macro Average,1.0,1.0,1.0,130
+Accuracy,,,1.0,

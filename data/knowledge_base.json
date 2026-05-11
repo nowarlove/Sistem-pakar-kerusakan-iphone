@@ -1,0 +1,67 @@
+{
+  "Signal Hilang Total": {
+    "IC WTR Rusak": 0.6,
+    "Antena Signal Rusak": 0.3
+  },
+  "Baterai Kembung": {
+    "Baterai Rusak": 0.95
+  },
+  "Baterai Daya Tahan Rendah": {
+    "Baterai Rusak": 0.65,
+    "IC Cas Rusak": 0.15,
+    "IC Power Rusak": 0.1
+  },
+  "LCD Greenscreen": {
+    "LCD Rusak": 0.9
+  },
+  "LCD Blank": {
+    "LCD Rusak": 0.55,
+    "IC Power Rusak": 0.3
+  },
+  "Layar Retak": {
+    "LCD Rusak": 0.9
+  },
+  "Touch Tidak Responsif": {
+    "LCD Rusak": 0.7
+  },
+  "Suara Pecah": {
+    "Speaker Rusak": 0.75,
+    "Baterai Rusak": 0.15,
+    "IC Audio Rusak": 0.05
+  },
+  "Tidak Ada Suara": {
+    "IC Audio Rusak": 0.8,
+    "Speaker Rusak": 0.1
+  },
+  "Perangkat Tidak Menyala": {
+    "IC Power Rusak": 0.65,
+    "LCD Rusak": 0.2
+  },
+  "Restart Sendiri": {
+    "IC Power Rusak": 0.55,
+    "Baterai Rusak": 0.3
+  },
+  "Tidak Bisa Mengisi Daya": {
+    "IC Cas Rusak": 0.55,
+    "Port Pengisian Rusak": 0.35
+  },
+  "Port Longgar": {
+    "Port Pengisian Rusak": 0.75
+  },
+  "Kabel Tidak Terdeteksi": {
+    "Port Pengisian Rusak": 0.8
+  },
+  "Kamera Tidak Terbuka": {
+    "Kamera Rusak": 0.85
+  },
+  "Hasil Foto Buram": {
+    "Kamera Rusak": 0.7
+  },
+  "Mikrofon Tidak Berfungsi": {
+    "Mikrofon Rusak": 0.85
+  },
+  "Sinyal Lemah": {
+    "Antena Signal Rusak": 0.7,
+    "IC WTR Rusak": 0.2
+  }
+}
