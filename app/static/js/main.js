@@ -1,47 +1,103 @@
-/* ── JS utama NST Phone Repair ── */
+/* ── JS utama NST Phone Repair (Unified Dashboard) ── */
 
-// ============================================================
-// Navigasi halaman
-// ============================================================
-document.querySelectorAll('.nav-item').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const target = btn.dataset.page;
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('page-' + target).classList.add('active');
+// DOM Elements
+const namaInput       = document.getElementById('nama-pelanggan');
+const tipeHpSelect    = document.getElementById('tipe-hp');
+const tipeHpCustomCon = document.getElementById('tipe-hp-custom-container');
+const tipeHpCustomInput= document.getElementById('tipe-hp-custom');
+const keluhanInput    = document.getElementById('keluhan-input');
+const btnDiagnosa     = document.getElementById('btn-diagnosa');
+const btnText         = document.getElementById('btn-text');
+const spinner         = document.getElementById('spinner');
+const normPreview     = document.getElementById('normalized-preview');
+const featuresBody    = document.getElementById('features-body');
+const resultPanel     = document.getElementById('result-panel');
+const btnPrint        = document.getElementById('btn-print');
 
-    // Muat info model saat halaman dev pertama kali dibuka
-    if (target === 'dev' && !window._modelLoaded) {
-      loadModelInfo();
-    }
-  });
-});
-
-// ============================================================
-// Diagnosis
-// ============================================================
-const keluhanInput  = document.getElementById('keluhan-input');
-const btnDiagnosa   = document.getElementById('btn-diagnosa');
-const spinner       = document.getElementById('spinner');
-const btnText       = document.getElementById('btn-text');
-const normPreview   = document.getElementById('normalized-preview');
-const featuresBody  = document.getElementById('features-body');
-const resultPanel   = document.getElementById('result-panel');
-const fallbackNotice= document.getElementById('fallback-notice');
+// Print Elements
+const printNama       = document.getElementById('print-nama');
+const printTipe       = document.getElementById('print-tipe');
+const printWaktu      = document.getElementById('print-waktu');
+const printKeluhan    = document.getElementById('print-keluhan');
 
 // State terakhir untuk log pengembangan
 window._lastResult = null;
 
-btnDiagnosa.addEventListener('click', runDiagnosis);
-keluhanInput.addEventListener('keydown', e => {
-  if (e.ctrlKey && e.key === 'Enter') runDiagnosis();
+// ============================================================
+// Event Listeners untuk Validasi Form
+// ============================================================
+
+// Monitor perubahan tipe HP
+tipeHpSelect.addEventListener('change', () => {
+  if (tipeHpSelect.value === 'Lainnya') {
+    tipeHpCustomCon.style.display = 'block';
+    tipeHpCustomInput.focus();
+  } else {
+    tipeHpCustomCon.style.display = 'none';
+    tipeHpCustomInput.value = '';
+  }
+  validateCustomerData();
 });
 
-async function runDiagnosis() {
+// Monitor perubahan input nama dan input tipe HP custom
+namaInput.addEventListener('input', validateCustomerData);
+tipeHpCustomInput.addEventListener('input', validateCustomerData);
+
+// Monitor keluhan input
+keluhanInput.addEventListener('input', () => {
   const keluhan = keluhanInput.value.trim();
-  if (!keluhan) {
-    keluhanInput.focus();
+  if (keluhan.length >= 3) {
+    btnDiagnosa.disabled = false;
+  } else {
+    btnDiagnosa.disabled = true;
+  }
+});
+
+// Jalankan diagnosis jika tombol diklik atau Ctrl+Enter ditekan
+btnDiagnosa.addEventListener('click', runDiagnosis);
+keluhanInput.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter' && !btnDiagnosa.disabled) {
+    runDiagnosis();
+  }
+});
+
+// Fungsi validasi data pelanggan
+function validateCustomerData() {
+  const nama = namaInput.value.trim();
+  const tipeHp = tipeHpSelect.value;
+  let isTipeHpValid = tipeHp !== "";
+
+  if (tipeHp === 'Lainnya') {
+    isTipeHpValid = tipeHpCustomInput.value.trim() !== "";
+  }
+
+  if (nama.length > 0 && isTipeHpValid) {
+    keluhanInput.disabled = false;
+    keluhanInput.placeholder = "Contoh: baterai drop cepat habis, layar gelap tidak nyala, tidak bisa dicas... (Ctrl+Enter untuk diagnosa)";
+    
+    // Jika keluhan sudah diisi sebelumnya
+    if (keluhanInput.value.trim().length >= 3) {
+      btnDiagnosa.disabled = false;
+    }
+  } else {
+    keluhanInput.disabled = true;
+    btnDiagnosa.disabled = true;
+    keluhanInput.placeholder = "Isi nama pelanggan & tipe ponsel terlebih dahulu untuk mengaktifkan kolom keluhan...";
+  }
+}
+
+// ============================================================
+// Logika Diagnosis (POST Request)
+// ============================================================
+async function runDiagnosis() {
+  const nama = namaInput.value.trim();
+  let tipeHp = tipeHpSelect.value;
+  if (tipeHp === 'Lainnya') {
+    tipeHp = tipeHpCustomInput.value.trim();
+  }
+  const keluhan = keluhanInput.value.trim();
+
+  if (!nama || !tipeHp || !keluhan) {
     return;
   }
 
@@ -54,7 +110,7 @@ async function runDiagnosis() {
     const res = await fetch('/diagnosa', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ keluhan }),
+      body: JSON.stringify({ nama, tipe_hp: tipeHp, keluhan }),
     });
     const data = await res.json();
 
@@ -64,21 +120,28 @@ async function runDiagnosis() {
     }
 
     window._lastResult = data;
+    
+    // Tampilkan tombol cetak
+    btnPrint.style.display = 'inline-flex';
+    
+    // Isi data cetak
+    printNama.textContent = data.customer.nama;
+    printTipe.textContent = data.customer.tipe_hp;
+    printWaktu.textContent = new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
+    printKeluhan.textContent = data.input.raw;
+
+    // Render komponen visual
     renderFeatures(data.features);
     renderResult(data);
     renderNormalized(data.input.normalized);
-
-    // Jika halaman dev sudah terbuka, refresh log
-    if (document.getElementById('page-dev').classList.contains('active')) {
-      renderLastLog(data);
-    }
+    renderLastLog(data);
 
   } catch (err) {
     alert('Koneksi ke server gagal: ' + err.message);
   } finally {
     btnDiagnosa.disabled = false;
     spinner.style.display = 'none';
-    btnText.textContent = 'Diagnosa';
+    btnText.textContent = 'Diagnosa Ulang';
   }
 }
 
@@ -97,7 +160,7 @@ function renderFeatures(features) {
     const badgeClass = isActive ? 'badge-active' : 'badge-normal';
     featuresBody.innerHTML += `
       <tr>
-        <td>${escHtml(col)}</td>
+        <td><b>${escHtml(col)}</b></td>
         <td><span class="badge ${badgeClass}">${escHtml(val)}</span></td>
       </tr>`;
   });
@@ -105,8 +168,6 @@ function renderFeatures(features) {
 
 // ---- Result panel ----
 function renderResult(data) {
-  fallbackNotice.style.display = data.used_fallback ? 'block' : 'none';
-
   const topPct   = data.top_percentage;
   const allDiag  = data.all_diagnoses;
   const maxPct   = allDiag[0].percentage;
@@ -126,9 +187,10 @@ function renderResult(data) {
   }).join('');
 
   resultPanel.innerHTML = `
-    <div class="fallback-notice" id="fallback-notice" ${data.used_fallback ? '' : 'style="display:none"'}>
-      ⚠ Tidak ada gejala yang terdeteksi. Hasil berdasarkan probabilitas prior empiris.
+    <div class="fallback-notice" id="fallback-notice" style="display:${data.used_fallback ? 'block' : 'none'}">
+      ⚠ Tidak ada gejala spesifik terdeteksi. Klasifikasi dialihkan menggunakan probabilitas prior empiris model.
     </div>
+    
     <div class="top-diagnosis-box">
       <div class="top-diag-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
@@ -137,40 +199,36 @@ function renderResult(data) {
         </svg>
       </div>
       <div>
-        <div class="top-diag-label">Diagnosis Utama</div>
+        <div class="top-diag-label">Kesimpulan Diagnosis</div>
         <div class="top-diag-name">${escHtml(data.top_diagnosis)}</div>
-        <div class="top-diag-pct">Keyakinan: ${topPct.toFixed(1)}% · ${data.active_rules_count} aturan aktif</div>
+        <div class="top-diag-pct">Tingkat Keyakinan: <b>${topPct.toFixed(1)}%</b> · ${data.active_rules_count} aturan terpicu</div>
       </div>
     </div>
+    
     <div class="card-title" style="font-size:12px; color:var(--gray-500); margin-bottom:10px;">
-      Distribusi Probabilitas Semua Kelas
+      Distribusi Probabilitas Pignistik (Semua Kelas)
     </div>
     <div class="bar-list">${barsHtml}</div>`;
 }
 
 // ============================================================
-// Model Info (Halaman Pengembangan)
+// Model Info & Basis Pengetahuan
 // ============================================================
 async function loadModelInfo() {
-  window._modelLoaded = true;
   try {
     const res  = await fetch('/model-info');
     const data = await res.json();
     renderModelStats(data);
     renderBeliefTable(data.rules);
     renderPriorTable(data.class_priors);
-    // Render log terakhir jika ada
-    if (window._lastResult) renderLastLog(window._lastResult);
   } catch (err) {
-    document.getElementById('dev-content').innerHTML =
-      `<p style="color:var(--danger)">Gagal memuat info model: ${err.message}</p>`;
+    console.error("Gagal memuat info model:", err);
   }
 }
 
 function renderModelStats(data) {
   document.getElementById('stat-rules').textContent   = data.total_rules;
   document.getElementById('stat-classes').textContent = data.total_classes;
-  // Hitung total dimensi (total hypotheses)
   const dims = data.rules.reduce((s, r) => s + r.hypotheses.length, 0);
   document.getElementById('stat-dims').textContent    = dims;
 }
@@ -183,7 +241,7 @@ function renderBeliefTable(rules) {
       tbody.innerHTML += `
         <tr>
           ${i === 0 ? `<td rowspan="${rule.hypotheses.length}"><b>${escHtml(rule.symptom_col)}</b><br>
-            <small style="color:var(--gray-400)">${escHtml(rule.symptom_val)}</small></td>` : ''}
+            <small style="color:var(--gray-500)">= ${escHtml(rule.symptom_val)}</small></td>` : ''}
           <td>${escHtml(hyp.damage)}</td>
           <td class="belief-val">${hyp.optimal_belief.toFixed(4)}</td>
           ${i === 0 ? `<td rowspan="${rule.hypotheses.length}" class="theta-val">${rule.uncertainty_theta.toFixed(4)}</td>` : ''}
@@ -202,8 +260,8 @@ function renderPriorTable(priors) {
     return `
       <tr>
         <td>${escHtml(cls)}</td>
-        <td style="width:150px">
-          <div style="display:flex;align-items:center;gap:6px">
+        <td style="width:130px">
+          <div style="display:flex;align-items:center;">
             <div class="prior-bar-track" style="flex:1">
               <div class="prior-bar-fill" style="width:${w}%"></div>
             </div>
@@ -219,25 +277,24 @@ function renderLastLog(data) {
   const container = document.getElementById('last-inference-log');
   const devLog    = data.dev_log;
 
-  // Teks masuk & fitur
   let html = `
     <div class="log-card">
-      <div class="log-header">📋 Log Inferensi Terakhir</div>
+      <div class="log-header">📋 Log Inferensi & Langkah Kombinasi Dempster-Shafer</div>
       <div class="log-body">
 
-        <div class="log-section-title">Input</div>
-        <div class="mass-grid">
-          <div class="mass-row"><span class="mass-key">Teks asli</span>
-            <span class="mass-val">${escHtml(data.input.raw)}</span></div>
-          <div class="mass-row"><span class="mass-key">Ternormalisasi</span>
-            <span class="mass-val">${escHtml(data.input.normalized)}</span></div>
+        <div class="log-section-title">Informasi Kasus & Input</div>
+        <div class="mass-grid" style="margin-bottom: 12px;">
+          <div class="mass-row"><span class="mass-key">Nama Pelanggan</span><span class="mass-val">${escHtml(data.customer.nama)}</span></div>
+          <div class="mass-row"><span class="mass-key">Tipe iPhone</span><span class="mass-val">${escHtml(data.customer.tipe_hp)}</span></div>
+          <div class="mass-row"><span class="mass-key">Teks Keluhan</span><span class="mass-val" style="font-style: italic;">"${escHtml(data.input.raw)}"</span></div>
+          <div class="mass-row"><span class="mass-key">Prapemrosesan</span><span class="mass-val">${escHtml(data.input.normalized)}</span></div>
         </div>
 
-        <div class="log-section-title">Gejala Aktif (${devLog.active_rules.length} aturan terpicu)</div>`;
+        <div class="log-section-title">Gejala Terdeteksi & Nilai Belief Pakar (${devLog.active_rules.length} Aturan Aktif)</div>`;
 
   if (devLog.active_rules.length === 0) {
-    html += `<div style="color:var(--gray-400);font-size:12px;padding:4px 0">
-               Tidak ada gejala aktif — menggunakan prior empiris sebagai fallback.
+    html += `<div style="color:var(--gray-400);font-size:12.5px;padding:8px 0;">
+               Tidak ada gejala spesifik terdeteksi (semua bernilai 'Normal'). Model dialihkan ke mode fallback prior.
              </div>`;
   } else {
     devLog.active_rules.forEach(rule => {
@@ -246,12 +303,12 @@ function renderLastLog(data) {
       rule.hypotheses.forEach(hyp => {
         html += `<div class="hyp-row">
           <span>${escHtml(hyp.damage)}</span>
-          <span class="belief-val">m = ${hyp.optimal_belief.toFixed(4)}</span>
+          <span class="belief-val">m({${escHtml(hyp.damage)}}) = ${hyp.optimal_belief.toFixed(4)}</span>
         </div>`;
       });
-      html += `<div class="hyp-row" style="color:var(--gray-400)">
-                 <span>Θ (Uncertainty)</span>
-                 <span>m = ${rule.uncertainty_theta.toFixed(4)}</span>
+      html += `<div class="hyp-row" style="color:var(--gray-500); border-top:1px dashed rgba(0,0,0,0.06); padding-top:4px; margin-top:4px;">
+                 <span>Uncertainty (Θ)</span>
+                 <span>m(Θ) = ${rule.uncertainty_theta.toFixed(4)}</span>
                </div>
              </div>`;
     });
@@ -260,12 +317,12 @@ function renderLastLog(data) {
   // Langkah kombinasi DS
   if (devLog.combination_steps.length > 1) {
     html += `<div class="log-section-title">Langkah Kombinasi Dempster-Shafer</div>
-             <div class="mass-grid">`;
+             <div class="mass-grid" style="margin-bottom:12px;">`;
     devLog.combination_steps.forEach((step, i) => {
-      html += `<div class="mass-row" style="flex-direction:column;align-items:flex-start;gap:3px">
-                 <span class="mass-key" style="font-weight:600">Sumber ${i+1}: ${escHtml(step.source)}</span>`;
+      html += `<div class="mass-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+                 <span class="mass-key" style="font-weight:600; color:var(--primary-dark)">Sumber ${i+1}: ${escHtml(step.source)}</span>`;
       Object.entries(step.mass_function).forEach(([k, v]) => {
-        html += `<span style="color:var(--gray-500)">  m(${escHtml(k)}) = <b style="color:var(--primary-dark)">${v}</b></span>`;
+        html += `<span style="color:var(--gray-500); padding-left:10px;">  m(${escHtml(k)}) = <b>${v}</b></span>`;
       });
       html += `</div>`;
     });
@@ -274,8 +331,8 @@ function renderLastLog(data) {
 
   // Mass function gabungan akhir
   if (Object.keys(devLog.final_mass_combined).length > 0) {
-    html += `<div class="log-section-title">Fungsi Massa Gabungan (Setelah Kombinasi DS)</div>
-             <div class="mass-grid">`;
+    html += `<div class="log-section-title">Fungsi Massa Gabungan Akhir m_combined</div>
+             <div class="mass-grid" style="margin-bottom:12px;">`;
     Object.entries(devLog.final_mass_combined).forEach(([k, v]) => {
       html += `<div class="mass-row">
                  <span class="mass-key">m(${escHtml(k)})</span>
@@ -286,7 +343,7 @@ function renderLastLog(data) {
   }
 
   // Probabilitas Pignistik
-  html += `<div class="log-section-title">Probabilitas Pignistik BetP (Hasil Akhir)</div>
+  html += `<div class="log-section-title">Probabilitas Pignistik (BetP) Hasil Akhir</div>
            <div class="mass-grid">`;
   const sortedProbs = Object.entries(devLog.pignistic_probabilities)
                             .sort((a, b) => b[1] - a[1]);
@@ -304,7 +361,7 @@ function renderLastLog(data) {
 }
 
 // ============================================================
-// Utilities
+// Utilities & Startup
 // ============================================================
 function escHtml(str) {
   return String(str)
@@ -313,3 +370,6 @@ function escHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+// Load model info saat inisialisasi awal
+window.addEventListener('DOMContentLoaded', loadModelInfo);

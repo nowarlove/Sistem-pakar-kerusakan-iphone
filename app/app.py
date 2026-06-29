@@ -39,20 +39,34 @@ def index():
 @app.route('/diagnosa', methods=['POST'])
 def diagnosa():
     """
-    Menerima JSON: {"keluhan": "..."}
+    Menerima JSON: {"nama": "...", "tipe_hp": "...", "keluhan": "..."}
     Mengembalikan JSON hasil diagnosis lengkap + dev_log.
     """
     data = request.get_json()
-    if not data or not data.get('keluhan', '').strip():
+    if not data:
+        return jsonify({'success': False, 'error': 'Data tidak valid.'}), 400
+
+    nama = data.get('nama', '').strip()
+    tipe_hp = data.get('tipe_hp', '').strip()
+    keluhan_raw = data.get('keluhan', '').strip()
+
+    if not nama:
+        return jsonify({'success': False, 'error': 'Nama pelanggan harus diisi.'}), 400
+    if not tipe_hp:
+        return jsonify({'success': False, 'error': 'Tipe ponsel harus diisi.'}), 400
+    if not keluhan_raw:
         return jsonify({'success': False, 'error': 'Keluhan tidak boleh kosong.'}), 400
 
-    keluhan_raw = data['keluhan'].strip()
     normalized = normalize_text(keluhan_raw)
     features = extract_features(normalized)
     result = engine.run_inference(features)
 
     return jsonify({
         'success': True,
+        'customer': {
+            'nama': nama,
+            'tipe_hp': tipe_hp,
+        },
         'input': {
             'raw': keluhan_raw,
             'normalized': normalized,

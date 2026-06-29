@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* ============================================================
-   RESET & BASE
+   RESET & BASE SYSTEM
 ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,14 +18,15 @@
   --gray-50:      #F8FAFC;
   --gray-100:     #F1F5F9;
   --gray-200:     #E2E8F0;
+  --gray-300:     #CBD5E1;
   --gray-400:     #94A3B8;
   --gray-500:     #64748B;
   --gray-700:     #334155;
   --gray-900:     #0F172A;
   --white:        #FFFFFF;
-  --radius:       10px;
-  --shadow:       0 1px 4px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
-  --transition:   .18s ease;
+  --radius:       12px;
+  --shadow:       0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.03);
+  --transition:   .15s ease;
 }
 
 body {
@@ -34,17 +35,17 @@ body {
   color: var(--gray-900);
   min-height: 100vh;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 /* ============================================================
-   LAYOUT
+   LAYOUT ARCHITECTURE
 ============================================================ */
 .app-wrapper { display: flex; min-height: 100vh; }
 
-/* ---- Sidebar ---- */
+/* ---- Sidebar (Branding & Static Info Panel) ---- */
 .sidebar {
-  width: 220px;
+  width: 240px;
   min-height: 100vh;
   background: var(--white);
   border-right: 1px solid var(--gray-200);
@@ -56,12 +57,12 @@ body {
 }
 
 .sidebar-logo {
-  padding: 20px 20px 16px;
+  padding: 24px 20px;
   border-bottom: 1px solid var(--gray-200);
 }
 
 .sidebar-logo .brand-name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--primary);
   line-height: 1.2;
@@ -70,191 +71,286 @@ body {
 .sidebar-logo .brand-sub {
   font-size: 11px;
   color: var(--gray-500);
-  margin-top: 2px;
+  margin-top: 3px;
+  font-weight: 500;
 }
 
-.sidebar-nav { padding: 12px 10px; flex: 1; }
+/* Sidebar Stats Panel */
+.sidebar-stats {
+  padding: 24px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-.nav-label {
-  font-size: 10px;
-  font-weight: 600;
+.sidebar-stat-title {
+  font-size: 11px;
+  font-weight: 700;
   color: var(--gray-400);
   text-transform: uppercase;
-  letter-spacing: .08em;
-  padding: 6px 10px 4px;
+  letter-spacing: .06em;
+  margin-bottom: 4px;
 }
 
-.nav-item {
+.sidebar-stat-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
+  padding: 10px 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
   border-radius: 8px;
-  cursor: pointer;
-  color: var(--gray-700);
-  font-weight: 500;
-  font-size: 13.5px;
-  transition: background var(--transition), color var(--transition);
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
 }
 
-.nav-item svg { flex-shrink: 0; }
+.sidebar-stat-item .stat-lbl {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-500);
+}
 
-.nav-item:hover { background: var(--gray-100); color: var(--primary); }
-.nav-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+.sidebar-stat-item .stat-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+}
 
 .sidebar-footer {
-  padding: 14px 18px;
+  padding: 16px 20px;
   border-top: 1px solid var(--gray-200);
   font-size: 11px;
   color: var(--gray-400);
+  font-weight: 500;
 }
 
-/* ---- Main Content ---- */
+/* ---- Main Content Space ---- */
 .main-content {
-  margin-left: 220px;
+  margin-left: 240px;
   flex: 1;
-  padding: 28px 32px;
-  max-width: calc(100vw - 220px);
+  padding: 32px;
+  max-width: calc(100vw - 240px);
 }
-
-.page { display: none; }
-.page.active { display: block; }
 
 /* ============================================================
    PAGE HEADER
 ============================================================ */
-.page-header { margin-bottom: 24px; }
-.page-title { font-size: 20px; font-weight: 700; color: var(--gray-900); }
-.page-subtitle { font-size: 13px; color: var(--gray-500); margin-top: 3px; }
+.page-header { margin-bottom: 28px; }
+.page-title { font-size: 22px; font-weight: 700; color: var(--gray-900); }
+.page-subtitle { font-size: 13.5px; color: var(--gray-500); margin-top: 4px; }
 
 /* ============================================================
-   DIAGNOSIS PAGE
+   DASHBOARD GRID & CARDS
 ============================================================ */
-.diag-grid {
+.dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: 1.1fr 1.3fr;
+  gap: 24px;
   align-items: start;
 }
 
-/* ---- Card ---- */
+.grid-left-col, .grid-right-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card Component */
 .card {
   background: var(--white);
   border: 1px solid var(--gray-200);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 24px;
   box-shadow: var(--shadow);
 }
 
 .card-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gray-700);
-  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 18px;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
+  border-bottom: 1.5px solid var(--gray-100);
+  padding-bottom: 10px;
 }
 
-.card-title svg { color: var(--primary); }
+.card-title svg { color: var(--primary); flex-shrink: 0; }
 
-/* ---- Input Area ---- */
-.input-group { display: flex; flex-direction: column; gap: 10px; }
+/* ============================================================
+   FORM CONTROLS (PROFESSIONAL INPUTS)
+============================================================ */
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-textarea#keluhan-input {
+.form-group label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.form-group label .required {
+  color: var(--danger);
+  margin-left: 2px;
+}
+
+.form-group input[type="text"],
+.form-group select,
+.form-group textarea {
   width: 100%;
-  height: 130px;
   border: 1.5px solid var(--gray-200);
   border-radius: 8px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   font-family: 'Inter', sans-serif;
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--gray-900);
-  resize: vertical;
-  transition: border-color var(--transition);
   background: var(--gray-50);
-}
-textarea#keluhan-input::placeholder { color: var(--gray-400); }
-textarea#keluhan-input:focus {
+  transition: border-color var(--transition), background var(--transition);
   outline: none;
+}
+
+.form-group input[type="text"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
   border-color: var(--primary);
   background: var(--white);
 }
 
+.form-group textarea {
+  height: 110px;
+  resize: vertical;
+}
+
+.form-group textarea:disabled {
+  background: var(--gray-100);
+  border-color: var(--gray-200);
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
+
+/* Buttons */
 .btn-primary {
   background: var(--primary);
   color: #fff;
   border: none;
-  padding: 10px 22px;
+  padding: 11px 22px;
   border-radius: 8px;
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  gap: 8px;
   transition: background var(--transition);
   align-self: flex-start;
+  min-width: 150px;
 }
-.btn-primary:hover { background: var(--primary-dark); }
-.btn-primary:disabled { background: var(--gray-400); cursor: not-allowed; }
+
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-primary:disabled { background: var(--gray-300); color: var(--gray-500); cursor: not-allowed; }
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--gray-700);
+  border: 1.5px solid var(--gray-200);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.btn-secondary:hover {
+  background: var(--gray-50);
+  border-color: var(--gray-300);
+  color: var(--gray-900);
+}
 
 /* Normalized text preview */
 .normalized-preview {
-  margin-top: 2px;
+  margin-top: 6px;
   padding: 8px 12px;
   background: var(--gray-100);
   border-radius: 7px;
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--gray-500);
   display: none;
+  line-height: 1.4;
 }
 .normalized-preview span { color: var(--gray-700); font-weight: 500; }
 
-/* ---- Features Table ---- */
-.features-table {
+/* ============================================================
+   FEATURES & PRIOR TABLES
+============================================================ */
+.features-table, .prior-table, .belief-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12.5px;
+  font-size: 12px;
 }
-.features-table th {
+
+.features-table th, .prior-table th, .belief-table th {
   background: var(--gray-100);
   color: var(--gray-500);
   font-weight: 600;
   text-align: left;
-  padding: 7px 10px;
+  padding: 8px 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
 }
-.features-table td {
-  padding: 7px 10px;
+
+.features-table td, .prior-table td, .belief-table td {
+  padding: 8px 12px;
   border-top: 1px solid var(--gray-100);
   color: var(--gray-700);
+  vertical-align: middle;
 }
-.features-table tr:hover td { background: var(--gray-50); }
 
+.features-table tr:hover td, .prior-table tr:hover td, .belief-table tr:hover td { 
+  background: var(--gray-50); 
+}
+
+/* Badges */
 .badge {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
 }
 .badge-normal  { background: var(--gray-100); color: var(--gray-500); }
 .badge-active  { background: var(--primary-light); color: var(--primary-dark); }
 
-/* ---- Result Panel ---- */
+/* Prior bar chart visualizer */
+.prior-bar-track { background: var(--gray-100); border-radius: 999px; height: 6px; }
+.prior-bar-fill  { height: 6px; border-radius: 999px; background: var(--success); }
+
+/* Belief Optimal colors */
+.belief-val { font-weight: 600; color: var(--primary-dark); }
+.theta-val  { font-weight: 600; color: var(--gray-500); }
+
+/* ============================================================
+   RESULT PANEL & PROBABILITY BAR CHART
+============================================================ */
 .result-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 200px;
+  height: 180px;
   color: var(--gray-400);
-  font-size: 13px;
-  gap: 8px;
+  font-size: 12.5px;
+  gap: 10px;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .top-diagnosis-box {
@@ -264,48 +360,47 @@ textarea#keluhan-input:focus {
   background: var(--primary-light);
   border: 1px solid #BFDBFE;
   border-radius: 9px;
-  padding: 14px 18px;
-  margin-bottom: 16px;
+  padding: 16px;
+  margin-bottom: 18px;
 }
 
 .top-diag-icon {
-  width: 44px; height: 44px;
+  width: 46px; height: 46px;
   background: var(--primary);
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   color: #fff; flex-shrink: 0;
 }
 
-.top-diag-label { font-size: 11px; color: var(--primary); font-weight: 600; }
+.top-diag-label { font-size: 11px; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
 .top-diag-name  { font-size: 16px; font-weight: 700; color: var(--primary-dark); }
-.top-diag-pct   { font-size: 12px; color: var(--primary); }
+.top-diag-pct   { font-size: 12px; color: var(--primary-dark); margin-top: 2px; }
 
 .fallback-notice {
-  margin-bottom: 12px;
-  padding: 8px 12px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
   background: var(--warning-light);
   border: 1px solid #FDE68A;
-  border-radius: 7px;
+  border-radius: 8px;
   font-size: 12px;
   color: var(--warning);
-  display: none;
+  line-height: 1.4;
 }
 
-/* ---- Bar Chart ---- */
-.bar-list { display: flex; flex-direction: column; gap: 7px; }
-
-.bar-row { display: flex; align-items: center; gap: 8px; }
-.bar-label { width: 150px; font-size: 12px; color: var(--gray-700); flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bar-track { flex: 1; background: var(--gray-100); border-radius: 999px; height: 10px; }
-.bar-fill  { height: 10px; border-radius: 999px; background: var(--primary); transition: width .5s cubic-bezier(.4,0,.2,1); }
+/* Distribution bar rows */
+.bar-list { display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-label { width: 140px; font-size: 12px; color: var(--gray-700); flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.bar-track { flex: 1; background: var(--gray-100); border-radius: 999px; height: 8px; }
+.bar-fill  { height: 8px; border-radius: 999px; background: var(--primary); transition: width .4s cubic-bezier(.4,0,.2,1); }
 .bar-fill.bar-top { background: var(--primary); }
-.bar-fill.bar-low { background: var(--gray-300, #CBD5E1); }
+.bar-fill.bar-low { background: var(--gray-300); }
 .bar-pct   { width: 44px; text-align: right; font-size: 12px; font-weight: 600; color: var(--gray-700); }
 
-/* ---- Spinner ---- */
+/* Spinner */
 .spinner {
-  width: 22px; height: 22px;
-  border: 3px solid rgba(255,255,255,.4);
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,.4);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin .7s linear infinite;
@@ -314,151 +409,195 @@ textarea#keluhan-input:focus {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ============================================================
-   DEVELOPMENT / MODEL PAGE
+   LOG DETAILS & MATHEMATICAL INFERENCE
 ============================================================ */
-.dev-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  align-items: start;
-}
-
-.model-stat-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.stat-box {
-  background: var(--white);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius);
-  padding: 16px;
-  text-align: center;
-}
-.stat-box .stat-val { font-size: 28px; font-weight: 700; color: var(--primary); }
-.stat-box .stat-lbl { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
-
-/* Belief table */
-.belief-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-.belief-table th {
-  background: var(--gray-100);
-  color: var(--gray-500);
-  font-weight: 600;
-  text-align: left;
-  padding: 7px 10px;
-  white-space: nowrap;
-}
-.belief-table td {
-  padding: 7px 10px;
-  border-top: 1px solid var(--gray-100);
-  color: var(--gray-700);
-  vertical-align: top;
-}
-.belief-table tr:hover td { background: var(--gray-50); }
-.belief-val { font-weight: 600; color: var(--primary-dark); }
-.theta-val  { font-weight: 600; color: var(--gray-500); }
-
-/* Prior table */
-.prior-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-.prior-table th {
-  background: var(--gray-100);
-  color: var(--gray-500);
-  font-weight: 600;
-  text-align: left;
-  padding: 7px 10px;
-}
-.prior-table td {
-  padding: 7px 10px;
-  border-top: 1px solid var(--gray-100);
-  color: var(--gray-700);
-}
-.prior-bar-track { flex: 1; background: var(--gray-100); border-radius: 999px; height: 8px; }
-.prior-bar-fill  { height: 8px; border-radius: 999px; background: var(--success); }
-
-/* Log inference */
-.log-section { margin-top: 20px; }
 .log-empty {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100px;
   color: var(--gray-400);
-  font-size: 13px;
+  font-size: 12.5px;
+  text-align: center;
 }
 
 .log-card {
   background: var(--white);
   border: 1px solid var(--gray-200);
-  border-radius: var(--radius);
+  border-radius: 8px;
   overflow: hidden;
 }
 
 .log-header {
   background: var(--gray-100);
-  padding: 10px 14px;
+  padding: 12px 16px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--gray-700);
   border-bottom: 1px solid var(--gray-200);
 }
 
-.log-body { padding: 12px 14px; font-size: 12px; }
+.log-body { padding: 16px; font-size: 12px; }
 
 .log-section-title {
   font-size: 11px;
   font-weight: 700;
-  color: var(--gray-500);
+  color: var(--gray-400);
   text-transform: uppercase;
   letter-spacing: .06em;
-  margin-bottom: 6px;
-  margin-top: 12px;
+  margin-bottom: 8px;
+  margin-top: 16px;
+  border-bottom: 1px solid var(--gray-100);
+  padding-bottom: 4px;
 }
 .log-section-title:first-child { margin-top: 0; }
 
 .log-rule-item {
-  background: var(--primary-light);
-  border-radius: 7px;
-  padding: 8px 10px;
-  margin-bottom: 6px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
 }
-.log-rule-item .rule-head { font-weight: 600; color: var(--primary-dark); margin-bottom: 4px; }
-.log-rule-item .hyp-row { display: flex; justify-content: space-between; color: var(--gray-700); padding: 1px 0; }
+.log-rule-item .rule-head { font-weight: 700; color: var(--primary-dark); margin-bottom: 6px; font-size: 12px; }
+.log-rule-item .hyp-row { display: flex; justify-content: space-between; color: var(--gray-700); padding: 2px 0; }
 
 .mass-grid {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 .mass-row {
   display: flex;
   justify-content: space-between;
-  padding: 3px 8px;
+  padding: 4px 10px;
   background: var(--gray-50);
-  border-radius: 5px;
+  border: 1px solid var(--gray-100);
+  border-radius: 6px;
   font-size: 11.5px;
 }
-.mass-key { color: var(--gray-700); }
-.mass-val { font-weight: 600; color: var(--primary-dark); }
+.mass-key { color: var(--gray-600); }
+.mass-val { font-weight: 600; color: var(--gray-900); }
 
 /* ============================================================
-   RESPONSIVE
+   RESPONSIVE DESIGN
 ============================================================ */
-@media (max-width: 900px) {
-  .diag-grid, .dev-grid { grid-template-columns: 1fr; }
-  .model-stat-row { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 1024px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
   .sidebar { width: 60px; }
-  .sidebar .brand-sub, .nav-item span, .sidebar-logo .brand-name,
-  .sidebar-footer, .nav-label { display: none; }
-  .main-content { margin-left: 60px; padding: 20px 16px; max-width: calc(100vw - 60px); }
-  .nav-item { justify-content: center; padding: 11px; }
+  .sidebar-logo .brand-name, .sidebar-logo .brand-sub, 
+  .sidebar-stats, .sidebar-footer { display: none; }
+  .main-content { margin-left: 60px; padding: 24px 16px; max-width: calc(100vw - 60px); }
+}
+
+/* ============================================================
+   PRINT STYLES (A4 LAYOUT FOR THESIS / CUSTOMER INVOICES)
+============================================================ */
+@media print {
+  /* Sembunyikan elemen input dan ornamen web */
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+  
+  .sidebar, .print-hide, .page-header, .card-title button {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  
+  .dashboard-grid {
+    display: block !important;
+  }
+  
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-bottom: 25px !important;
+    background: #white !important;
+  }
+
+  .print-width-100 {
+    width: 100% !important;
+  }
+  
+  /* Invoice Kop & Info Pelanggan */
+  .print-header-invoice {
+    display: block !important;
+    margin-bottom: 20px;
+  }
+  
+  .invoice-brand {
+    font-size: 20pt;
+    font-weight: bold;
+    color: #1D4ED8;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  
+  .invoice-title {
+    font-size: 12pt;
+    font-weight: 600;
+    text-align: center;
+    color: #64748B;
+    margin-bottom: 15px;
+  }
+  
+  .invoice-hr {
+    border: none;
+    border-top: 2px solid #334155;
+    margin-bottom: 15px;
+  }
+  
+  .invoice-table {
+    width: 100%;
+    margin-bottom: 20px;
+    font-size: 11pt;
+  }
+  
+  .invoice-table td {
+    padding: 4px 0;
+  }
+  
+  /* Distribusi Probabilitas di Print */
+  .bar-list {
+    margin-top: 10px;
+  }
+  
+  .bar-row {
+    margin-bottom: 6px;
+  }
+  
+  .bar-track {
+    border: 1px solid #CBD5E1 !important;
+    background: #F1F5F9 !important;
+  }
+  
+  .bar-fill {
+    background: #1D4ED8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  /* Log inferensi dan tabel cetak */
+  .log-card {
+    border: 1px solid #E2E8F0 !important;
+  }
+  
+  .log-header {
+    background: #F1F5F9 !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+  }
+  
+  .log-rule-item {
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+  }
 }
