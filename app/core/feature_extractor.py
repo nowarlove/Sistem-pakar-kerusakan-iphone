@@ -21,6 +21,36 @@ def _match(text: str, keywords: list) -> bool:
     return bool(re.search(pattern, text, re.IGNORECASE))
 
 
+
+def _match_negative(text: str, keywords: list, normal_words: list = None) -> bool:
+    """
+    Mencocokkan keyword dalam teks, namun memastikan tidak diikuti atau
+    didahului oleh kata-kata yang menyatakan kondisi normal/sehat/aman.
+    """
+    if normal_words is None:
+        normal_words = ['normal', 'aman', 'sehat', 'bagus', 'baik', 'awet', 'oke', 'ok']
+    
+    if not _match(text, keywords):
+        return False
+        
+    for kw in keywords:
+        escaped = re.escape(kw).replace(r'\ ', r'\s+')
+        matches = list(re.finditer(rf'\b{escaped}\b', text, re.IGNORECASE))
+        for m in matches:
+            start, end = m.start(), m.end()
+            context_before = text[max(0, start - 15):start].strip()
+            context_after = text[end:min(len(text), end + 15)].strip()
+            
+            # Cek apakah berdampingan dengan kata normal/sehat/aman
+            has_normal_before = any(re.search(rf'\b{re.escape(nw)}\b$', context_before, re.IGNORECASE) for nw in normal_words)
+            has_normal_after = any(re.search(rf'^\b{re.escape(nw)}\b', context_after, re.IGNORECASE) for nw in normal_words)
+            
+            if has_normal_before or has_normal_after:
+                continue
+            else:
+                return True
+    return False
+
 def extract_features(normalized_text: str) -> dict:
     """
     Menerima teks yang sudah dinormalisasi,
@@ -81,7 +111,7 @@ def extract_features(normalized_text: str) -> dict:
     # PERBAIKAN: hapus 'turun' sendirian (terlalu ambigu)
     # Tambah konteks: pastikan tidak dalam kalimat sinyal
     # ----------------------------------------------------------------
-    has_baterai_kw = _match(t, ['baterai', 'kembung', 'drop', 'boros',
+    has_baterai_kw = _match_negative(t, ['baterai', 'kembung', 'drop', 'boros',
                                  'mentok 0%'])
     # 'turun' hanya valid jika ada kata baterai/daya/% di sekitarnya
     has_turun_battery = (
@@ -124,7 +154,7 @@ def extract_features(normalized_text: str) -> dict:
     # ----------------------------------------------------------------
     # 4. Wifi
     # ----------------------------------------------------------------
-    if _match(t, ['wifi']):
+    if _match_negative(t, ['wifi']):
         wifi = 'Hilang Timbul'
     else:
         wifi = 'Normal'
@@ -132,7 +162,7 @@ def extract_features(normalized_text: str) -> dict:
     # ----------------------------------------------------------------
     # 5. Touchscreen
     # ----------------------------------------------------------------
-    if _match(t, ['disentuh', 'sentuh', 'touchscreen', 'ghostouch', 'ngefreeze']):
+    if _match_negative(t, ['disentuh', 'sentuh', 'touchscreen', 'ghostouch', 'ngefreeze']):
         touch = 'Tidak bisa disentuh'
     else:
         touch = 'Normal'
@@ -162,7 +192,7 @@ def extract_features(normalized_text: str) -> dict:
     # ----------------------------------------------------------------
     # 7. Kamera
     # ----------------------------------------------------------------
-    if _match(t, ['kamera', 'foto', 'buram', 'jamur', 'getar']):
+    if _match_negative(t, ['kamera', 'foto', 'buram', 'jamur', 'getar']):
         # 'getar' hanya jika bukan konteks mikrofon/telepon
         if _match(t, ['getar']) and not _match(t, ['kamera', 'foto', 'buram', 'jamur']):
             kamera = 'Normal'
@@ -176,7 +206,7 @@ def extract_features(normalized_text: str) -> dict:
     # ----------------------------------------------------------------
     if has_vibe_on_charge:
         konektor = 'Normal'
-    elif _match(t, ['tidak bisa dicas', 'dicas mati', 'dicas tidak naik',
+    elif _match_negative(t, ['tidak bisa dicas', 'dicas mati', 'dicas tidak naik',
                   'dicas keluar masuk', 'konektor cas', 'dicas', 'cas', 'konektor']):
         if _match(t, ['keluar masuk', 'longgar', 'kotor']):
             konektor = 'Keluar masuk'
@@ -196,19 +226,19 @@ def extract_features(normalized_text: str) -> dict:
         'bunyi', 'berbunyi', 'nada dering', 'nada',
         'audio', 'earpiece', 'suara keluar',
     ]
-    has_speaker_kw = _match(t, speaker_keywords)
+    has_speaker_kw = _match_negative(t, speaker_keywords)
     # 'suara' saja valid untuk speaker HANYA jika tidak dalam konteks mikrofon
     # Jika ada 'tidak dengar'/'pihak lain' dll, konteks adalah mikrofon
-    has_suara_general = _match(t, ['suara']) and not is_mic_ctx
+    has_suara_general = _match_negative(t, ['suara']) and not is_mic_ctx
     # 'pecah' speaker: suara pecah (bukan LCD pecah)
     has_pecah_speaker = (
-        _match(t, ['pecah'])
-        and _match(t, ['suara', 'speaker', 'buzzer', 'audio'])
+        _match_negative(t, ['pecah'])
+        and _match_negative(t, ['suara', 'speaker', 'buzzer', 'audio'])
         and not is_mic_ctx
     )
     # Kata telepon/telfon HANYA jika tidak ada konteks mikrofon
     has_telepon_kw = (
-        _match(t, ['ditelpon', 'ditelepon', 'telfon tidak', 'telfon ga'])
+        _match_negative(t, ['ditelpon', 'ditelepon', 'telfon tidak', 'telfon ga'])
         and not is_mic_ctx
     )
 
@@ -229,7 +259,7 @@ def extract_features(normalized_text: str) -> dict:
         'suara tidak masuk', 'suara putus',
         'telepon tidak terdengar',
     ]
-    if _match(t, mikrofon_keywords):
+    if _match_negative(t, mikrofon_keywords):
         mikrofon = 'Tidak Berfungsi'
     else:
         mikrofon = 'Normal'
@@ -245,7 +275,7 @@ def extract_features(normalized_text: str) -> dict:
     # ----------------------------------------------------------------
     # 12. Tombol
     # ----------------------------------------------------------------
-    if _match(t, ['tombol', 'power', 'volume', 'haptic', 'haptik',
+    if _match_negative(t, ['tombol', 'power', 'volume', 'haptic', 'haptik',
                   'switch', 'silent', 'home', 'on/off']):
         tombol = 'Tidak Berfungsi'
     else:
