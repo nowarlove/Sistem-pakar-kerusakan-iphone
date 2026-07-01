@@ -243,7 +243,7 @@ def extract_features(normalized_text: str) -> dict:
     )
 
     if has_speaker_kw or has_suara_general or has_pecah_speaker or has_telepon_kw:
-        speaker = 'Tidak ada suara'
+        speaker = 'Rusak'
     else:
         speaker = 'Normal'
 

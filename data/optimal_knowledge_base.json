@@ -185,7 +185,7 @@
     },
     {
       "symptom_col": "Speaker",
-      "symptom_val": "Tidak ada suara",
+      "symptom_val": "Rusak",
       "hypotheses": [
         {
           "damage": "Speaker Rusak",
