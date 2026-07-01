@@ -167,7 +167,43 @@ function renderFeatures(features) {
 }
 
 // ---- Result panel ----
+// ---- Result panel ----
 function renderResult(data) {
+  if (data.is_software) {
+    resultPanel.innerHTML = `
+      <div class="fallback-notice" id="fallback-notice" style="display: block; background: var(--primary-light); border-color: #BFDBFE; color: var(--primary-dark);">
+        ℹ Masalah Sistem Operasi Terdeteksi (Software Gate Filter)
+      </div>
+      
+      <div class="top-diagnosis-box" style="background: var(--success-light); border-color: #A7F3D0;">
+        <div class="top-diag-icon" style="background: var(--success);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="top-diag-label" style="color: var(--success);">Kesimpulan Diagnosis</div>
+          <div class="top-diag-name" style="color: #065F46;">${escHtml(data.top_diagnosis)}</div>
+          <div class="top-diag-pct" style="color: #065F46;">Tingkat Keyakinan: <b>100.0%</b> · Deteksi Kata Kunci Sistem</div>
+        </div>
+      </div>
+      
+      <div class="card-title" style="font-size:12px; color:var(--gray-500); margin-bottom:10px;">
+        Panduan Solusi Penanganan Software iPhone
+      </div>
+      <div style="font-size: 13px; color: var(--gray-700); line-height: 1.6; padding: 14px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
+        <p style="margin-bottom: 8px;"><b>Rekomendasi Tindakan Teknisi:</b></p>
+        <ol style="margin-left: 20px;">
+          <li style="margin-bottom: 4px;">Sambungkan iPhone ke PC/Mac menggunakan kabel Lightning/USB-C original.</li>
+          <li style="margin-bottom: 4px;">Gunakan aplikasi resmi <b>Apple Devices / iTunes</b> atau tool pihak ketiga terpercaya seperti <b>3uTools</b>.</li>
+          <li style="margin-bottom: 4px;">Lakukan proses <b>Flash / Restore</b> menggunakan firmware iOS (.ipsw) resmi paling baru yang ditandatangani oleh Apple.</li>
+          <li style="margin-bottom: 4px;">Jika mengalami masalah aktivasi iCloud (Activation Lock), bantu pelanggan memulihkan Apple ID atau lakukan verifikasi kepemilikan.</li>
+        </ol>
+      </div>`;
+    return;
+  }
+
   const topPct   = data.top_percentage;
   const allDiag  = data.all_diagnoses;
   const maxPct   = allDiag[0].percentage;
@@ -185,6 +221,27 @@ function renderResult(data) {
         <span class="bar-pct">${pct.toFixed(1)}%</span>
       </div>`;
   }).join('');
+
+  // Dropdown opsi feedback
+  const DAMAGE_CLASSES = [
+    "Antena Signal Rusak",
+    "Backdoor Rusak",
+    "Baterai Rusak",
+    "IC Audio Rusak",
+    "IC Cas Rusak",
+    "IC Power Rusak",
+    "IC WTR Rusak",
+    "Kamera Rusak",
+    "LCD Rusak",
+    "Mikrofon Rusak",
+    "Port Pengisian Rusak",
+    "Speaker Rusak",
+    "Tombol Rusak"
+  ];
+  
+  const optionsHtml = DAMAGE_CLASSES.map(cls => 
+    `<option value="${escHtml(cls)}">${escHtml(cls)}</option>`
+  ).join('');
 
   resultPanel.innerHTML = `
     <div class="fallback-notice" id="fallback-notice" style="display:${data.used_fallback ? 'block' : 'none'}">
@@ -208,7 +265,78 @@ function renderResult(data) {
     <div class="card-title" style="font-size:12px; color:var(--gray-500); margin-bottom:10px;">
       Distribusi Probabilitas Pignistik (Semua Kelas)
     </div>
-    <div class="bar-list">${barsHtml}</div>`;
+    <div class="bar-list" style="margin-bottom: 20px;">${barsHtml}</div>
+    
+    <!-- Box Feedback / Pembelajaran Dinamis Model -->
+    <div class="feedback-box print-hide" style="margin-top: 20px; padding: 16px; background: var(--gray-50); border: 1.5px dashed var(--gray-200); border-radius: 8px;">
+      <div style="font-weight: 700; font-size: 12.5px; color: var(--gray-900); margin-bottom: 4px;">
+        Diagnosis Kurang Tepat?
+      </div>
+      <div style="font-size: 11.5px; color: var(--gray-500); margin-bottom: 10px; line-height: 1.4;">
+        Bantu model belajar dengan mengoreksi kerusakan yang sebenarnya terjadi. Prior empiris model akan langsung disesuaikan secara dinamis.
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <select id="feedback-select" style="flex: 1; padding: 8px 10px; font-size: 12.5px; border-radius: 6px; border: 1.5px solid var(--gray-200); outline: none; background: #fff;">
+          <option value="" disabled selected>Pilih kerusakan yang benar...</option>
+          ${optionsHtml}
+        </select>
+        <button class="btn-secondary" id="btn-submit-feedback" style="padding: 8px 14px; font-size: 12.5px; font-weight: 600;" onclick="submitFeedback()">
+          Simpan Koreksi
+        </button>
+      </div>
+      <div id="feedback-success-msg" style="display: none; margin-top: 8px; font-size: 12px; color: var(--success); font-weight: 600;">
+        ✓ Sukses! Umpan balik dicatat dan prior empiris model diperbarui secara dinamis.
+      </div>
+    </div>`;
+}
+
+// Fungsi submit feedback ke backend secara asinkron
+async function submitFeedback() {
+  const selectEl = document.getElementById('feedback-select');
+  const successEl = document.getElementById('feedback-success-msg');
+  const btnEl = document.getElementById('btn-submit-feedback');
+  
+  const kerusakanSebenarnya = selectEl.value;
+  if (!kerusakanSebenarnya) {
+    alert("Silakan pilih jenis kerusakan yang benar terlebih dahulu.");
+    return;
+  }
+  
+  if (!window._lastResult) return;
+  
+  const payload = {
+    nama: window._lastResult.customer.nama,
+    tipe_hp: window._lastResult.customer.tipe_hp,
+    keluhan: window._lastResult.input.raw,
+    kerusakan_sebenarnya: kerusakanSebenarnya
+  };
+  
+  btnEl.disabled = true;
+  btnEl.textContent = "Menyimpan...";
+  
+  try {
+    const res = await fetch('/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const resData = await res.json();
+    
+    if (resData.success) {
+      successEl.style.display = "block";
+      successEl.textContent = `✓ Sukses! Prior '${kerusakanSebenarnya}' kini diperbarui menjadi ${(resData.new_prior * 100).toFixed(2)}% (total ${resData.total_cases} kasus).`;
+      
+      // Muat ulang info model agar tabel prior di layar langsung sinkron
+      await loadModelInfo();
+    } else {
+      alert("Gagal mengirim umpan balik: " + resData.error);
+    }
+  } catch (err) {
+    alert("Koneksi gagal: " + err.message);
+  } finally {
+    btnEl.disabled = false;
+    btnEl.textContent = "Simpan Koreksi";
+  }
 }
 
 // ============================================================

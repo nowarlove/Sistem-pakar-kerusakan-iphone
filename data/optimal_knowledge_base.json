@@ -219,6 +219,21 @@
         }
       ],
       "uncertainty_theta": 0.2358
+    },
+    {
+      "symptom_col": "Mikrofon",
+      "symptom_val": "Tidak Berfungsi",
+      "hypotheses": [
+        {
+          "damage": "Mikrofon Rusak",
+          "optimal_belief": 0.9
+        },
+        {
+          "damage": "IC Audio Rusak",
+          "optimal_belief": 0.05
+        }
+      ],
+      "uncertainty_theta": 0.05
     }
   ]
 }
