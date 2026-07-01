@@ -12,3 +12,6 @@ __pycache__/
 *.pyo
 *.pyd
 .pytest_cache/
+
+# Ignore runtime feedback log (data dinamis, bukan bagian dari model)
+data/feedback_log.json
