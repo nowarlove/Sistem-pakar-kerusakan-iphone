@@ -29,6 +29,25 @@ def extract_features(normalized_text: str) -> dict:
     t = normalized_text.lower()
 
     # ----------------------------------------------------------------
+    # Konteks getaran/mesin hidup saat dicas (mesin sehat, cuma layar/baterai)
+    # ----------------------------------------------------------------
+    has_vibe_on_charge = _match(t, [
+        'bergetar saat dicas', 'bergetar saat dicharge', 'bergetar pas dicas',
+        'bergetar saat cas', 'getar saat cas', 'ada getaran saat cas',
+        'getar saat dicas', 'getar saat dicharge', 'ada getaran saat dicas',
+        'ada getaran saat dicharge', 'indicator bergetar', 'dicas bergetar',
+        'dicharge bergetar', 'dicas ada getar', 'dicharge ada getar',
+        'cas bergetar', 'charge bergetar', 'cas ada getar', 'charge ada getar',
+        'mesin getar', 'indikator getar', 'getar saja'
+    ])
+    
+    # Kata kunci layar/lcd mati/tidak tampil
+    has_screen_dead_kw = _match(t, [
+        'lcd mati', 'lcd tidak nyala', 'lcd tidak hidup', 'lcd gelap',
+        'lcd blank', 'lcd mati total', 'lcd tidak tampil', 'lcd blackscreen'
+    ])
+
+    # ----------------------------------------------------------------
     # Konteks negatif yang sering menyebabkan false-positive
     # ----------------------------------------------------------------
     is_speaker_ctx   = _match(t, ['suara', 'speaker', 'buzzer', 'audio',
@@ -82,7 +101,11 @@ def extract_features(normalized_text: str) -> dict:
 
     # 'pecah' di sini hanya valid jika bukan konteks speaker/audio/backdoor
     has_blank_kw = _match(t, ['blank', 'blackscreen', 'gelap', 'retak', 'garis'])
-    has_blank_valid = has_blank_kw and not is_backdoor_ctx
+    
+    # Jika layar mati/tidak tampil tetapi mesin getar saat cas, tandanya LCD-nya rusak/gelap
+    has_lcd_dead_vibrating = has_screen_dead_kw and has_vibe_on_charge
+    
+    has_blank_valid = (has_blank_kw or has_lcd_dead_vibrating) and not is_backdoor_ctx
 
     has_pecah_lcd = (
         _match(t, ['pecah'])
@@ -117,7 +140,9 @@ def extract_features(normalized_text: str) -> dict:
     # ----------------------------------------------------------------
     # 6. Tegangan
     # ----------------------------------------------------------------
-    if _match(t, ['korsleting', 'mati total', 'korosi',
+    if has_vibe_on_charge:
+        tegangan = '0,8 - 2,2'
+    elif _match(t, ['korsleting', 'mati total', 'korosi',
                   'basah', 'kena air', 'masuk air']):
         if _match(t, ['tombol', 'kamera', 'speaker', 'wifi']):
             tegangan = '0,8 - 2,2'
@@ -149,7 +174,9 @@ def extract_features(normalized_text: str) -> dict:
     # ----------------------------------------------------------------
     # 8. Konektor Cas
     # ----------------------------------------------------------------
-    if _match(t, ['tidak bisa dicas', 'dicas mati', 'dicas tidak naik',
+    if has_vibe_on_charge:
+        konektor = 'Normal'
+    elif _match(t, ['tidak bisa dicas', 'dicas mati', 'dicas tidak naik',
                   'dicas keluar masuk', 'konektor cas', 'dicas', 'cas', 'konektor']):
         if _match(t, ['keluar masuk', 'longgar', 'kotor']):
             konektor = 'Keluar masuk'
