@@ -22,33 +22,80 @@ def _match(text: str, keywords: list) -> bool:
 
 
 
-def _match_negative(text: str, keywords: list, normal_words: list = None) -> bool:
+def _match_negative(text: str, keywords: list) -> bool:
     """
-    Mencocokkan keyword dalam teks, namun memastikan tidak diikuti atau
-    didahului oleh kata-kata yang menyatakan kondisi normal/sehat/aman.
+    Versi improvisasi v2.4 (Negasi + Clause Breaker):
+    Mencocokkan keyword dalam teks, namun memastikan:
+    1. Keyword TIDAK dikaitkan dengan kata normal (misal: "baterai normal") dalam radius 3 kata.
+    2. Keyword masalah TIDAK didahului/diikuti kata negasi (misal: "tidak boros", "baterai ga drop").
+    3. Konteks window dibatasi oleh pemisah klausa (koma, titik, dan, tapi) agar negasi tidak melompat.
     """
-    if normal_words is None:
-        normal_words = ['normal', 'aman', 'sehat', 'bagus', 'baik', 'awet', 'oke', 'ok']
-    
+    normal_words = ['normal', 'aman', 'sehat', 'bagus', 'baik', 'awet', 'oke', 'ok', 'lancar', 'mulus']
+    negation_words = ['tidak', 'gak', 'ga', 'ndak', 'enggak', 'tdk', 'bukan', 'belom', 'belum']
+    problem_words = ['drop', 'boros', 'pecah', 'retak', 'kembung', 'rusak', 'mati', 'gelap', 'buram', 'jamur', 'getar', 'freeze', 'hilang', 'putus', 'panas', 'ngefreeze', 'goyang']
+    clause_breakers = [',', '.', ';', 'tapi', 'dan', 'sedangkan', 'namun', 'cuma', 'cuman']
+
     if not _match(text, keywords):
         return False
-        
+
     for kw in keywords:
         escaped = re.escape(kw).replace(r'\ ', r'\s+')
         matches = list(re.finditer(rf'\b{escaped}\b', text, re.IGNORECASE))
+        
         for m in matches:
             start, end = m.start(), m.end()
-            context_before = text[max(0, start - 15):start].strip()
-            context_after = text[end:min(len(text), end + 15)].strip()
             
-            # Cek apakah berdampingan dengan kata normal/sehat/aman
-            has_normal_before = any(re.search(rf'\b{re.escape(nw)}\b$', context_before, re.IGNORECASE) for nw in normal_words)
-            has_normal_after = any(re.search(rf'^\b{re.escape(nw)}\b', context_after, re.IGNORECASE) for nw in normal_words)
+            context_before = text[max(0, start - 40):start].strip()
+            context_after = text[end:min(len(text), end + 40)].strip()
             
-            if has_normal_before or has_normal_after:
-                continue
-            else:
-                return True
+            # Batasi context dengan punctuation / conjunction agar tidak lompat klausa
+            for cb in clause_breakers:
+                if cb in [',', '.', ';']:
+                    idx = context_before.rfind(cb)
+                    if idx != -1:
+                        context_before = context_before[idx+1:]
+                else:
+                    parts = re.split(rf'\b{cb}\b', context_before, flags=re.IGNORECASE)
+                    if len(parts) > 1:
+                        context_before = parts[-1]
+
+            for cb in clause_breakers:
+                if cb in [',', '.', ';']:
+                    idx = context_after.find(cb)
+                    if idx != -1:
+                        context_after = context_after[:idx]
+                else:
+                    parts = re.split(rf'\b{cb}\b', context_after, flags=re.IGNORECASE)
+                    if len(parts) > 1:
+                        context_after = parts[0]
+            
+            words_before = [w.lower() for w in re.findall(r'\b\w+\b', context_before)]
+            words_after = [w.lower() for w in re.findall(r'\b\w+\b', context_after)]
+            
+            window_before = words_before[-3:] if words_before else []
+            window_after = words_after[:3] if words_after else []
+            
+            is_negated = False
+            
+            # 1. Apakah ada kata "normal" / "aman" di sekitarnya?
+            if any(nw in window_before for nw in normal_words) or any(nw in window_after for nw in normal_words):
+                is_negated = True
+                
+            # 2. Apakah keyword ini adalah "kata masalah" yang didahului negasi? (misal: "tidak drop")
+            if kw in problem_words and any(neg in window_before for neg in negation_words):
+                is_negated = True
+            
+            # 3. Apakah keyword ini adalah komponen yang diikuti negasi dan kata masalah? (misal: "LCD tidak pecah")
+            if not is_negated:
+                for i, w in enumerate(window_after):
+                    if w in negation_words:
+                        if i + 1 < len(window_after) and window_after[i+1] in problem_words:
+                            is_negated = True
+                            break
+                            
+            if not is_negated:
+                return True # Jika ditemukan SATU SAJA keyword yang tidak dinegasi (berarti benar rusak)
+                
     return False
 
 def extract_features(normalized_text: str) -> dict:
