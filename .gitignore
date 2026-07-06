@@ -8,10 +8,17 @@ data/dataUji/*.csv
 
 # Ignore Python cache
 __pycache__/
+*/__pycache__/
+*/*/__pycache__/
 *.pyc
 *.pyo
 *.pyd
 .pytest_cache/
 
-# Ignore runtime feedback log (data dinamis, bukan bagian dari model)
+# Ignore runtime feedback log (data dinamis, bukan bagian model)
 data/feedback_log.json
+
+# Ignore temporary test/debug scripts
+app/test_*.py
+app/inspect_*.py
+app/add_*.py
