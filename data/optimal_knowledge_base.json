@@ -12,7 +12,9 @@
     "Mikrofon Rusak": 0.004076086956521739,
     "Port Pengisian Rusak": 0.09239130434782608,
     "Speaker Rusak": 0.033967391304347824,
-    "Tombol Rusak": 0.08016304347826086
+    "Tombol Rusak": 0.08016304347826086,
+    "Touchscreen Rusak": 0.05,
+    "Antena Wifi Rusak": 0.05
   },
   "rules": [
     {
@@ -95,7 +97,7 @@
       "symptom_val": "Hilang Timbul",
       "hypotheses": [
         {
-          "damage": "Antena Signal Rusak",
+          "damage": "Antena Wifi Rusak",
           "optimal_belief": 0.95
         }
       ],
@@ -106,7 +108,7 @@
       "symptom_val": "Tidak bisa disentuh",
       "hypotheses": [
         {
-          "damage": "LCD Rusak",
+          "damage": "Touchscreen Rusak",
           "optimal_belief": 0.8783
         }
       ],

@@ -66,7 +66,7 @@ def diagnosa():
     # Pintu Gerbang Filter Software (Software Gate)
     # ---------------------------------------------------------------
     sw_keywords = [
-        'lupa pola', 'flash', 'software', 'sofware', 'instal ulang', 
+        'lupa pola', 'flash ulang', 'flashing', 'diflash', 'software', 'sofware', 'instal ulang', 
         'icloud', 'stuck logo', 'bypass', 'downgrade', 'bootloop', 
         'restore ios', 'error itunes', 'itunes error', 'lupa sandi', 
         'lupa password', 'stuck apple', 'logo apple aja'

@@ -237,11 +237,11 @@ def extract_features(normalized_text: str) -> dict:
         tegangan = '0,8 - 2,2'
 
     # ----------------------------------------------------------------
-    # 7. Kamera
+    # 7. Kamera & Senter
     # ----------------------------------------------------------------
-    if _match_negative(t, ['kamera', 'foto', 'buram', 'jamur', 'getar']):
+    if _match_negative(t, ['kamera', 'foto', 'buram', 'jamur', 'getar', 'flash', 'senter', 'flashlight']):
         # 'getar' hanya jika bukan konteks mikrofon/telepon
-        if _match(t, ['getar']) and not _match(t, ['kamera', 'foto', 'buram', 'jamur']):
+        if _match(t, ['getar']) and not _match(t, ['kamera', 'foto', 'buram', 'jamur', 'flash', 'senter', 'flashlight']):
             kamera = 'Normal'
         else:
             kamera = 'Blank'

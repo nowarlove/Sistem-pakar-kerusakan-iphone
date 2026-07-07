@@ -225,6 +225,7 @@ function renderResult(data) {
   // Dropdown opsi feedback
   const DAMAGE_CLASSES = [
     "Antena Signal Rusak",
+    "Antena Wifi Rusak",
     "Backdoor Rusak",
     "Baterai Rusak",
     "IC Audio Rusak",
@@ -236,7 +237,8 @@ function renderResult(data) {
     "Mikrofon Rusak",
     "Port Pengisian Rusak",
     "Speaker Rusak",
-    "Tombol Rusak"
+    "Tombol Rusak",
+    "Touchscreen Rusak"
   ];
   
   const optionsHtml = DAMAGE_CLASSES.map(cls => 
