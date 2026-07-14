@@ -80,7 +80,7 @@ def diagnosa():
             "Signal": "Normal", "Baterai": "Normal", "LCD": "Normal", "Wifi": "Normal",
             "Touchscreen": "Normal", "Tegangan": "0,8 - 2,2", "Kamera": "Normal",
             "Konektor Cas": "Normal", "Speaker": "Normal", "Mikrofon": "Normal",
-            "Backdoor": "Normal", "Tombol": "Normal"
+            "Backdoor": "Normal", "Housing": "Normal", "Tombol": "Normal"
         }
         return jsonify({
             'success': True,
@@ -219,9 +219,32 @@ def feedback():
             return jsonify({'success': False, 'error': f'Gagal memutakhirkan model: {str(e)}'}), 500
 
 
+@app.after_request
+def add_header(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
+import socket
+
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
+
 if __name__ == '__main__':
+    local_ip = get_local_ip()
     print("=" * 55)
     print("  NST Phone Repair — Sistem Pakar Kerusakan iPhone")
-    print("  Buka browser: http://localhost:5000")
+    print(f"  Buka di komputer ini: http://localhost:5000")
+    print(f"  Buka di HP/perangkat lain: http://{local_ip}:5000")
     print("=" * 55)
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)

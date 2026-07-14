@@ -95,10 +95,18 @@
     },
     {
       "symptom_col": "Speaker",
-      "symptom_val": "Tidak ada suara",
+      "symptom_val": "Rusak",
       "hypotheses": [
         { "damage": "Speaker Rusak", "initial_belief": 0.70 },
         { "damage": "IC Audio Rusak", "initial_belief": 0.15 }
+      ]
+    },
+    {
+      "symptom_col": "Mikrofon",
+      "symptom_val": "Tidak Berfungsi",
+      "hypotheses": [
+        { "damage": "Mikrofon Rusak", "initial_belief": 0.90 },
+        { "damage": "IC Audio Rusak", "initial_belief": 0.05 }
       ]
     },
     {
@@ -106,6 +114,13 @@
       "symptom_val": "Pecah/Retak",
       "hypotheses": [
         { "damage": "Backdoor Rusak", "initial_belief": 0.90 }
+      ]
+    },
+    {
+      "symptom_col": "Housing",
+      "symptom_val": "Pecah/Retak/Bengkok",
+      "hypotheses": [
+        { "damage": "Housing Rusak", "initial_belief": 0.90 }
       ]
     },
     {

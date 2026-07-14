@@ -33,7 +33,7 @@ def _match_negative(text: str, keywords: list) -> bool:
     normal_words = ['normal', 'aman', 'sehat', 'bagus', 'baik', 'awet', 'oke', 'ok', 'lancar', 'mulus']
     negation_words = ['tidak', 'gak', 'ga', 'ndak', 'enggak', 'tdk', 'bukan', 'belom', 'belum']
     problem_words = ['drop', 'boros', 'pecah', 'retak', 'kembung', 'rusak', 'mati', 'gelap', 'buram', 'jamur', 'getar', 'freeze', 'hilang', 'putus', 'panas', 'ngefreeze', 'goyang']
-    clause_breakers = [',', '.', ';', 'tapi', 'dan', 'sedangkan', 'namun', 'cuma', 'cuman']
+    clause_breakers = [',', '.', ';', 'tapi', 'tetapi', 'dan', 'sedangkan', 'namun', 'cuma', 'cuman']
 
     if not _match(text, keywords):
         return False
@@ -108,7 +108,7 @@ def extract_features(normalized_text: str) -> dict:
     # ----------------------------------------------------------------
     # Konteks getaran/mesin hidup saat dicas (mesin sehat, cuma layar/baterai)
     # ----------------------------------------------------------------
-    has_vibe_on_charge = _match(t, [
+    has_vibe_on_charge_kw = _match(t, [
         'bergetar saat dicas', 'bergetar saat dicharge', 'bergetar pas dicas',
         'bergetar saat cas', 'getar saat cas', 'ada getaran saat cas',
         'getar saat dicas', 'getar saat dicharge', 'ada getaran saat dicas',
@@ -117,6 +117,11 @@ def extract_features(normalized_text: str) -> dict:
         'cas bergetar', 'charge bergetar', 'cas ada getar', 'charge ada getar',
         'mesin getar', 'indikator getar', 'getar saja'
     ])
+    has_vibe_on_charge_comb = (
+        _match_negative(t, ['getar', 'getaran', 'bergetar']) and
+        _match(t, ['cas', 'dicas', 'charge', 'dicharge'])
+    )
+    has_vibe_on_charge = has_vibe_on_charge_kw or has_vibe_on_charge_comb
     
     # Kata kunci layar/lcd mati/tidak tampil
     has_screen_dead_kw = _match(t, [
@@ -133,8 +138,8 @@ def extract_features(normalized_text: str) -> dict:
     is_mic_ctx       = _match(t, ['mikrofon', 'microphone', 'rekam', 'merekam',
                                   'tidak terdengar', 'tidak dengar',
                                   'pihak lain', 'orang lain'])
-    is_backdoor_ctx  = _match(t, ['backdoor', 'kaca belakang', 'punggung',
-                                  'housing', 'casing', 'bodi'])
+    is_backdoor_ctx  = _match(t, ['backdoor', 'kaca belakang', 'punggung'])
+    is_housing_ctx   = _match(t, ['housing', 'casing', 'bodi'])
     is_battery_ctx   = _match(t, ['baterai', 'kembung', 'boros', 'mentok',
                                   'daya', 'kapasitas'])
     is_signal_ctx    = _match(t, ['sinyal', 'signal', 'jaringan', 'wifi',
@@ -182,13 +187,14 @@ def extract_features(normalized_text: str) -> dict:
     # Jika layar mati/tidak tampil tetapi mesin getar saat cas, tandanya LCD-nya rusak/gelap
     has_lcd_dead_vibrating = has_screen_dead_kw and has_vibe_on_charge
     
-    has_blank_valid = (has_blank_kw or has_lcd_dead_vibrating) and not is_backdoor_ctx
+    has_blank_valid = (has_blank_kw or has_lcd_dead_vibrating) and not is_backdoor_ctx and not is_housing_ctx
 
     has_pecah_lcd = (
         _match(t, ['pecah'])
         and not is_speaker_ctx    # 'speaker pecah' bukan LCD
         and not is_mic_ctx
         and not is_backdoor_ctx
+        and not is_housing_ctx
     )
 
     if has_lcd_kw:
@@ -302,6 +308,8 @@ def extract_features(normalized_text: str) -> dict:
         'mikrofon', 'microphone', 'mic',
         'rekam suara', 'merekam', 'recording',
         'tidak terdengar', 'suara tidak terdengar',
+        'tidak dengar', 'orang tidak dengar',
+        'tidak kedengaran', 'suara tidak kedengaran',
         'pihak lain tidak dengar', 'orang lain tidak dengar',
         'suara tidak masuk', 'suara putus',
         'telepon tidak terdengar',
@@ -318,6 +326,14 @@ def extract_features(normalized_text: str) -> dict:
         backdoor = 'Pecah/Retak'
     else:
         backdoor = 'Normal'
+
+    # ----------------------------------------------------------------
+    # 11b. Housing
+    # ----------------------------------------------------------------
+    if is_housing_ctx:
+        housing = 'Pecah/Retak/Bengkok'
+    else:
+        housing = 'Normal'
 
     # ----------------------------------------------------------------
     # 12. Tombol
@@ -340,5 +356,6 @@ def extract_features(normalized_text: str) -> dict:
         'Speaker':      speaker,
         'Mikrofon':     mikrofon,
         'Backdoor':     backdoor,
+        'Housing':      housing,
         'Tombol':       tombol,
     }

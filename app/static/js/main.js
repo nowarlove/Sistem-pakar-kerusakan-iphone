@@ -228,6 +228,7 @@ function renderResult(data) {
     "Antena Wifi Rusak",
     "Backdoor Rusak",
     "Baterai Rusak",
+    "Housing Rusak",
     "IC Audio Rusak",
     "IC Cas Rusak",
     "IC Power Rusak",

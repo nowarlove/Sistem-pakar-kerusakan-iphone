@@ -1,8 +1,9 @@
 {
   "class_priors": {
     "Antena Signal Rusak": 0.02309782608695652,
-    "Backdoor Rusak": 0.10054347826086957,
+    "Backdoor Rusak": 0.06793478260869565,
     "Baterai Rusak": 0.18614130434782608,
+    "Housing Rusak": 0.03260869565217391,
     "IC Audio Rusak": 0.002717391304347826,
     "IC Cas Rusak": 0.002717391304347826,
     "IC Power Rusak": 0.08967391304347826,
@@ -12,9 +13,7 @@
     "Mikrofon Rusak": 0.004076086956521739,
     "Port Pengisian Rusak": 0.09239130434782608,
     "Speaker Rusak": 0.033967391304347824,
-    "Tombol Rusak": 0.08016304347826086,
-    "Touchscreen Rusak": 0.05,
-    "Antena Wifi Rusak": 0.05
+    "Tombol Rusak": 0.08016304347826086
   },
   "rules": [
     {
@@ -23,11 +22,11 @@
       "hypotheses": [
         {
           "damage": "IC WTR Rusak",
-          "optimal_belief": 0.3851
+          "optimal_belief": 0.4003
         },
         {
           "damage": "Antena Signal Rusak",
-          "optimal_belief": 0.5649
+          "optimal_belief": 0.5497
         }
       ],
       "uncertainty_theta": 0.05
@@ -38,14 +37,14 @@
       "hypotheses": [
         {
           "damage": "Antena Signal Rusak",
-          "optimal_belief": 0.9494
+          "optimal_belief": 0.95
         },
         {
           "damage": "IC WTR Rusak",
           "optimal_belief": 0.0
         }
       ],
-      "uncertainty_theta": 0.0506
+      "uncertainty_theta": 0.05
     },
     {
       "symptom_col": "Baterai",
@@ -83,14 +82,14 @@
       "hypotheses": [
         {
           "damage": "LCD Rusak",
-          "optimal_belief": 0.8584
+          "optimal_belief": 0.8609
         },
         {
           "damage": "IC Power Rusak",
           "optimal_belief": 0.0
         }
       ],
-      "uncertainty_theta": 0.1416
+      "uncertainty_theta": 0.1391
     },
     {
       "symptom_col": "Wifi",
@@ -98,10 +97,10 @@
       "hypotheses": [
         {
           "damage": "Antena Wifi Rusak",
-          "optimal_belief": 0.95
+          "optimal_belief": 0.0
         }
       ],
-      "uncertainty_theta": 0.05
+      "uncertainty_theta": 1.0
     },
     {
       "symptom_col": "Touchscreen",
@@ -109,10 +108,10 @@
       "hypotheses": [
         {
           "damage": "Touchscreen Rusak",
-          "optimal_belief": 0.8783
+          "optimal_belief": 0.95
         }
       ],
-      "uncertainty_theta": 0.1217
+      "uncertainty_theta": 0.05
     },
     {
       "symptom_col": "Tegangan",
@@ -120,14 +119,14 @@
       "hypotheses": [
         {
           "damage": "IC Power Rusak",
-          "optimal_belief": 0.7238
+          "optimal_belief": 0.6836
         },
         {
           "damage": "Baterai Rusak",
-          "optimal_belief": 0.1181
+          "optimal_belief": 0.0
         }
       ],
-      "uncertainty_theta": 0.1581
+      "uncertainty_theta": 0.3164
     },
     {
       "symptom_col": "Tegangan",
@@ -135,11 +134,11 @@
       "hypotheses": [
         {
           "damage": "IC Power Rusak",
-          "optimal_belief": 0.8303
+          "optimal_belief": 0.827
         },
         {
           "damage": "Baterai Rusak",
-          "optimal_belief": 0.1197
+          "optimal_belief": 0.123
         },
         {
           "damage": "IC Cas Rusak",
@@ -165,10 +164,10 @@
       "hypotheses": [
         {
           "damage": "Port Pengisian Rusak",
-          "optimal_belief": 0.7975
+          "optimal_belief": 0.8001
         }
       ],
-      "uncertainty_theta": 0.2025
+      "uncertainty_theta": 0.1999
     },
     {
       "symptom_col": "Konektor Cas",
@@ -191,11 +190,26 @@
       "hypotheses": [
         {
           "damage": "Speaker Rusak",
-          "optimal_belief": 0.95
+          "optimal_belief": 0.9002
         },
         {
           "damage": "IC Audio Rusak",
-          "optimal_belief": 0.0
+          "optimal_belief": 0.0498
+        }
+      ],
+      "uncertainty_theta": 0.05
+    },
+    {
+      "symptom_col": "Mikrofon",
+      "symptom_val": "Tidak Berfungsi",
+      "hypotheses": [
+        {
+          "damage": "Mikrofon Rusak",
+          "optimal_belief": 0.8021
+        },
+        {
+          "damage": "IC Audio Rusak",
+          "optimal_belief": 0.1479
         }
       ],
       "uncertainty_theta": 0.05
@@ -212,30 +226,26 @@
       "uncertainty_theta": 0.05
     },
     {
+      "symptom_col": "Housing",
+      "symptom_val": "Pecah/Retak/Bengkok",
+      "hypotheses": [
+        {
+          "damage": "Housing Rusak",
+          "optimal_belief": 0.95
+        }
+      ],
+      "uncertainty_theta": 0.05
+    },
+    {
       "symptom_col": "Tombol",
       "symptom_val": "Tidak Berfungsi",
       "hypotheses": [
         {
           "damage": "Tombol Rusak",
-          "optimal_belief": 0.7642
+          "optimal_belief": 0.7417
         }
       ],
-      "uncertainty_theta": 0.2358
-    },
-    {
-      "symptom_col": "Mikrofon",
-      "symptom_val": "Tidak Berfungsi",
-      "hypotheses": [
-        {
-          "damage": "Mikrofon Rusak",
-          "optimal_belief": 0.9
-        },
-        {
-          "damage": "IC Audio Rusak",
-          "optimal_belief": 0.05
-        }
-      ],
-      "uncertainty_theta": 0.05
+      "uncertainty_theta": 0.2583
     }
   ]
 }
